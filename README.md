@@ -1,66 +1,186 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Documentación de Componentes CRUD y Login
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Introducción
+Este proyecto utiliza Angular para gestionar funcionalidades como el inicio de sesión y las operaciones CRUD (Crear, Leer, Actualizar y Eliminar) en tablas de productos y usuarios. A continuación, se presenta una descripción interactiva y práctica de cada componente.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 1. Componente de Login
+### Qué hace este componente
+Permite a los usuarios autenticarse ingresando su correo electrónico y contraseña. Si la autenticación es exitosa, el usuario es redirigido al dashboard.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Características clave
+- **Formulario reactivo**: Validaciones integradas (requerido y formato de correo).
+- **Interacción con el API**: Solicitud `POST` para validar credenciales.
+- **Redirección**: Navegación automática tras el inicio de sesión exitoso.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Ejemplo Dinámico
+```typescript
+onSubmit() {
+  if (this.loginForm.valid) {
+    this.http.post('http://127.0.0.1:8000/api/login', this.loginForm.value)
+      .subscribe({
+        next: (response) => {
+          console.log('Login exitoso:', response);
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          console.error('Error al iniciar sesión:', error);
+        }
+      });
+  }
+}
+```
+### Prueba en Acción
+1. Ingresa un correo válido (e.g., `usuario@ejemplo.com`).
+2. Agrega una contraseña cualquiera.
+3. Observa cómo el sistema autentica y redirige.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 2. Tabla de Productos
+### Qué hace este componente
+Permite visualizar, agregar, editar y eliminar productos. Es ideal para gestionar catálogos o inventarios.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Características clave
+- **Carga automática**: Recupera productos del API al cargar el componente.
+- **CRUD completo**: Operaciones para agregar, actualizar y eliminar productos.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Ejemplo Dinámico
+**Cargar Productos**
+```typescript
+loadProducts() {
+  this.http.get<any[]>(this.apiUrl)
+    .subscribe(data => {
+      this.products = data;
+      console.log('Productos cargados:', this.products);
+    });
+}
+```
+**Agregar Producto**
+```typescript
+addProduct(product: any) {
+  this.http.post(this.apiUrl, product)
+    .subscribe(response => {
+      console.log('Producto agregado:', response);
+      this.loadProducts();
+    });
+}
+```
+**Editar Producto**
+```typescript
+updateProduct(product: any) {
+  const url = `${this.apiUrl}/${product.id}`;
+  this.http.put(url, product)
+    .subscribe(response => {
+      console.log('Producto actualizado:', response);
+      this.loadProducts();
+    });
+}
+```
+**Eliminar Producto**
+```typescript
+deleteProduct(productId: number) {
+  const url = `${this.apiUrl}/${productId}`;
+  this.http.delete(url)
+    .subscribe(response => {
+      console.log('Producto eliminado:', response);
+      this.loadProducts();
+    });
+}
+```
 
-## Laravel Sponsors
+### Interactividad
+1. **Carga**: Abre la tabla y verifica los productos cargados.
+2. **Agregar**: Introduce un nuevo producto y observa la actualización.
+3. **Editar**: Modifica un producto existente y confirma los cambios.
+4. **Eliminar**: Borra un producto y verifica el impacto inmediato.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 3. Tabla de Usuarios
+### Qué hace este componente
+Gestiona la información de los usuarios del sistema, incluyendo sus detalles personales.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Características clave
+- **Listado completo**: Muestra a todos los usuarios.
+- **CRUD completo**: Permite agregar, editar y eliminar usuarios.
 
-## Contributing
+### Ejemplo Dinámico
+**Cargar Usuarios**
+```typescript
+loadUsers() {
+  this.http.get<any[]>(this.apiUrl)
+    .subscribe(data => {
+      this.users = data;
+      console.log('Usuarios cargados:', this.users);
+    });
+}
+```
+**Eliminar Usuario**
+```typescript
+deleteUser(userId: number) {
+  const url = `${this.apiUrl}/${userId}`;
+  this.http.delete(url)
+    .subscribe(response => {
+      console.log('Usuario eliminado:', response);
+      this.loadUsers();
+    });
+}
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Interactividad
+1. **Cargar**: Abre la tabla para visualizar los usuarios actuales.
+2. **Agregar**: Crea un nuevo usuario y confírmalo en la lista.
+3. **Editar**: Cambia información de un usuario y guarda los cambios.
+4. **Eliminar**: Prueba eliminando un usuario y observa la lista actualizada.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 4. Cerrar Sesión
+### Qué hace este componente
+Permite a los usuarios cerrar su sesión actual de manera segura y limpia. Adicionalmente, muestra la foto de perfil del usuario autenticado.
 
-## Security Vulnerabilities
+### Características clave
+- **Foto de perfil**: Se muestra una imagen del usuario.
+- **Cierre de sesión**: Borra las credenciales y redirige al login.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Ejemplo Dinámico
+**Mostrar Foto y Cerrar Sesión**
+```typescript
+logout() {
+  this.http.post('http://127.0.0.1:8000/api/logout', {}).subscribe({
+    next: () => {
+      console.log('Sesión cerrada');
+      this.router.navigate(['/login']);
+    },
+    error: (error) => {
+      console.error('Error al cerrar sesión:', error);
+    }
+  });
+}
+```
 
-## License
+**HTML**
+```html
+<div class="profile">
+  <img [src]="user.profilePicture" alt="Foto de perfil">
+  <button (click)="logout()">Cerrar Sesión</button>
+</div>
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Interactividad
+1. Asegúrate de que el usuario haya iniciado sesión.
+2. Verifica que la foto de perfil aparece correctamente.
+3. Haz clic en "Cerrar Sesión" y observa la redirección al login.
+
+---
+
+## Conclusión
+Este sistema es altamente funcional y flexible, permitiendo gestionar tanto la autenticación como los datos de usuarios y productos. Algunos puntos clave incluyen:
+
+1. **Integración de API**: Gracias a `HttpClient`, la comunicación con el servidor es directa y eficiente.
+2. **Modularidad**: Los componentes están diseñados para ser reutilizables y escalables.
+3. **Interactividad**: La estructura del proyecto facilita probar y ajustar cada función de manera sencilla.
+
+Este sistema es una excelente base para construir aplicaciones web modernas. Su enfoque modular permite agregar nuevas características, como notificaciones en tiempo real, análisis de datos o exportación de reportes. Además, la implementación actual es adaptable para trabajar con diferentes APIs o servicios en la nube, haciéndolo ideal para proyectos empresariales o académicos.
