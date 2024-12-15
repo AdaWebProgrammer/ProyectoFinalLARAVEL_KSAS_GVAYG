@@ -1,186 +1,210 @@
-# Documentación de Componentes CRUD y Login
+
+# Reporte: Sistema de Gestión de Usuarios y Productos
 
 ## Introducción
-Este proyecto utiliza Angular para gestionar funcionalidades como el inicio de sesión y las operaciones CRUD (Crear, Leer, Actualizar y Eliminar) en tablas de productos y usuarios. A continuación, se presenta una descripción interactiva y práctica de cada componente.
+
+Este proyecto, desarrollado en Laravel, implementa un sistema para la **gestión de usuarios y productos**. Utiliza las capacidades del framework Laravel para organizar el sistema bajo el patrón **Modelo-Vista-Controlador (MVC)**, lo que garantiza una estructura modular, escalable y de fácil mantenimiento. Este reporte detalla cada parte clave del sistema, explicando cómo interactúan los componentes para manejar los datos.
 
 ---
 
-## 1. Componente de Login
-### Qué hace este componente
-Permite a los usuarios autenticarse ingresando su correo electrónico y contraseña. Si la autenticación es exitosa, el usuario es redirigido al dashboard.
+## Gestión de Usuarios
 
-### Características clave
-- **Formulario reactivo**: Validaciones integradas (requerido y formato de correo).
-- **Interacción con el API**: Solicitud `POST` para validar credenciales.
-- **Redirección**: Navegación automática tras el inicio de sesión exitoso.
+El módulo de usuarios permite realizar las operaciones CRUD (Crear, Leer, Actualizar, Eliminar). Esto se logra mediante el modelo `User`, el controlador `UserController`, y las migraciones que definen la tabla en la base de datos.
 
-### Ejemplo Dinámico
-```typescript
-onSubmit() {
-  if (this.loginForm.valid) {
-    this.http.post('http://127.0.0.1:8000/api/login', this.loginForm.value)
-      .subscribe({
-        next: (response) => {
-          console.log('Login exitoso:', response);
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          console.error('Error al iniciar sesión:', error);
-        }
-      });
-  }
+### Creación de Usuarios
+
+El método `store` del controlador recibe los datos enviados por un formulario o API y los almacena en la base de datos mediante el modelo `User`. Los datos son validados automáticamente por las reglas definidas en el modelo.
+
+#### Código:
+```php
+public function store(Request $request) {
+    return User::create($request->all());
 }
 ```
-### Prueba en Acción
-1. Ingresa un correo válido (e.g., `usuario@ejemplo.com`).
-2. Agrega una contraseña cualquiera.
-3. Observa cómo el sistema autentica y redirige.
+
+#### Explicación:
+- **`$request->all()`**: Recoge todos los datos enviados en la solicitud.
+- **`User::create()`**: Usa los datos recogidos y los guarda en la base de datos.
+
+El modelo `User` incluye validaciones y características para garantizar la seguridad y consistencia de los datos.
 
 ---
 
-## 2. Tabla de Productos
-### Qué hace este componente
-Permite visualizar, agregar, editar y eliminar productos. Es ideal para gestionar catálogos o inventarios.
+### Visualización de Usuarios
 
-### Características clave
-- **Carga automática**: Recupera productos del API al cargar el componente.
-- **CRUD completo**: Operaciones para agregar, actualizar y eliminar productos.
+El método `index` devuelve la lista completa de usuarios registrados, mientras que el método `show` obtiene información específica de un usuario por su `id`.
 
-### Ejemplo Dinámico
-**Cargar Productos**
-```typescript
-loadProducts() {
-  this.http.get<any[]>(this.apiUrl)
-    .subscribe(data => {
-      this.products = data;
-      console.log('Productos cargados:', this.products);
-    });
+#### Código:
+```php
+public function index() {
+    return User::all();
 }
-```
-**Agregar Producto**
-```typescript
-addProduct(product: any) {
-  this.http.post(this.apiUrl, product)
-    .subscribe(response => {
-      console.log('Producto agregado:', response);
-      this.loadProducts();
-    });
-}
-```
-**Editar Producto**
-```typescript
-updateProduct(product: any) {
-  const url = `${this.apiUrl}/${product.id}`;
-  this.http.put(url, product)
-    .subscribe(response => {
-      console.log('Producto actualizado:', response);
-      this.loadProducts();
-    });
-}
-```
-**Eliminar Producto**
-```typescript
-deleteProduct(productId: number) {
-  const url = `${this.apiUrl}/${productId}`;
-  this.http.delete(url)
-    .subscribe(response => {
-      console.log('Producto eliminado:', response);
-      this.loadProducts();
-    });
+
+public function show($id) {
+    return User::find($id);
 }
 ```
 
-### Interactividad
-1. **Carga**: Abre la tabla y verifica los productos cargados.
-2. **Agregar**: Introduce un nuevo producto y observa la actualización.
-3. **Editar**: Modifica un producto existente y confirma los cambios.
-4. **Eliminar**: Borra un producto y verifica el impacto inmediato.
+#### Explicación:
+- **`User::all()`**: Recupera todos los registros de la tabla `users`.
+- **`User::find($id)`**: Busca un registro específico basado en el `id`.
 
 ---
 
-## 3. Tabla de Usuarios
-### Qué hace este componente
-Gestiona la información de los usuarios del sistema, incluyendo sus detalles personales.
+### Actualización de Usuarios
 
-### Características clave
-- **Listado completo**: Muestra a todos los usuarios.
-- **CRUD completo**: Permite agregar, editar y eliminar usuarios.
+El método `update` modifica un registro existente. Encuentra el usuario por su `id`, luego aplica las actualizaciones proporcionadas.
 
-### Ejemplo Dinámico
-**Cargar Usuarios**
-```typescript
-loadUsers() {
-  this.http.get<any[]>(this.apiUrl)
-    .subscribe(data => {
-      this.users = data;
-      console.log('Usuarios cargados:', this.users);
-    });
-}
-```
-**Eliminar Usuario**
-```typescript
-deleteUser(userId: number) {
-  const url = `${this.apiUrl}/${userId}`;
-  this.http.delete(url)
-    .subscribe(response => {
-      console.log('Usuario eliminado:', response);
-      this.loadUsers();
-    });
+#### Código:
+```php
+public function update(Request $request, $id) {
+    $user = User::find($id);
+    $user->update($request->all());
+    return $user;
 }
 ```
 
-### Interactividad
-1. **Cargar**: Abre la tabla para visualizar los usuarios actuales.
-2. **Agregar**: Crea un nuevo usuario y confírmalo en la lista.
-3. **Editar**: Cambia información de un usuario y guarda los cambios.
-4. **Eliminar**: Prueba eliminando un usuario y observa la lista actualizada.
+#### Explicación:
+- **`User::find($id)`**: Encuentra el usuario.
+- **`$user->update()`**: Actualiza los datos enviados.
 
 ---
 
-## 4. Cerrar Sesión
-### Qué hace este componente
-Permite a los usuarios cerrar su sesión actual de manera segura y limpia. Adicionalmente, muestra la foto de perfil del usuario autenticado.
+### Eliminación de Usuarios
 
-### Características clave
-- **Foto de perfil**: Se muestra una imagen del usuario.
-- **Cierre de sesión**: Borra las credenciales y redirige al login.
+El método `destroy` elimina un usuario del sistema mediante su `id`.
 
-### Ejemplo Dinámico
-**Mostrar Foto y Cerrar Sesión**
-```typescript
-logout() {
-  this.http.post('http://127.0.0.1:8000/api/logout', {}).subscribe({
-    next: () => {
-      console.log('Sesión cerrada');
-      this.router.navigate(['/login']);
-    },
-    error: (error) => {
-      console.error('Error al cerrar sesión:', error);
-    }
-  });
+#### Código:
+```php
+public function destroy($id) {
+    User::destroy($id);
 }
 ```
 
-**HTML**
-```html
-<div class="profile">
-  <img [src]="user.profilePicture" alt="Foto de perfil">
-  <button (click)="logout()">Cerrar Sesión</button>
-</div>
+#### Explicación:
+- **`User::destroy()`**: Borra el registro correspondiente del sistema.
+
+---
+
+## Gestión de Productos
+
+El módulo de productos funciona de manera similar al de usuarios, permitiendo operaciones CRUD. La tabla `shoes` almacena la información de cada producto.
+
+### Registro de Productos
+
+El método `store` guarda un nuevo producto en la base de datos.
+
+#### Código:
+```php
+public function store(Request $request) {
+    return Shoe::create($request->all());
+}
 ```
 
-### Interactividad
-1. Asegúrate de que el usuario haya iniciado sesión.
-2. Verifica que la foto de perfil aparece correctamente.
-3. Haz clic en "Cerrar Sesión" y observa la redirección al login.
+#### Explicación:
+- Los datos enviados se almacenan en los campos definidos en el modelo `Shoe`.
+
+---
+
+## Migraciones: Creación de Tablas en la Base de Datos
+
+Laravel utiliza migraciones para definir la estructura de las tablas en la base de datos. Este sistema permite mantener un control de las modificaciones y versiones de las tablas.
+
+### Migración de la Tabla `users`
+
+Esta migración define los campos necesarios para gestionar a los usuarios.
+
+#### Código:
+```php
+Schema::create('users', function (Blueprint $table) {
+    $table->id(); // Clave primaria
+    $table->string('name'); // Nombre del usuario
+    $table->string('email')->unique(); // Email único para cada usuario
+    $table->timestamp('email_verified_at')->nullable(); // Fecha opcional de verificación
+    $table->string('password'); // Contraseña cifrada
+    $table->rememberToken(); // Token de sesión
+    $table->timestamps(); // Fechas de creación y actualización
+});
+```
+
+#### Explicación de los Campos:
+1. **`id`**: Clave primaria única.
+2. **`name`**: Almacena el nombre del usuario.
+3. **`email`**: Correo electrónico del usuario, único para evitar duplicados.
+4. **`password`**: Contraseña encriptada.
+5. **`timestamps`**: Guarda automáticamente la fecha de creación y última actualización.
+
+---
+
+### Migración de la Tabla `shoes`
+
+Define los campos para gestionar el inventario de productos.
+
+#### Código:
+```php
+Schema::create('shoes', function (Blueprint $table) {
+    $table->id(); // Identificador único
+    $table->string('name'); // Nombre del producto
+    $table->string('brand'); // Marca del producto
+    $table->decimal('price', 8, 2); // Precio con dos decimales
+    $table->integer('size'); // Talla del producto
+    $table->integer('stock'); // Cantidad disponible
+    $table->timestamps(); // Fechas de creación y actualización
+});
+```
+
+#### Explicación de los Campos:
+1. **`id`**: Identificador único de cada producto.
+2. **`name`**: Nombre del producto.
+3. **`brand`**: Marca del producto.
+4. **`price`**: Precio almacenado con precisión de dos decimales.
+5. **`size`**: Talla del producto.
+6. **`stock`**: Cantidad disponible en inventario.
+
+---
+
+## Rutas: Conexión entre Funcionalidades
+
+Las rutas conectan los controladores con los endpoints que el usuario o cliente puede llamar.
+
+### Rutas de Usuarios
+
+- **GET /users**: Lista todos los usuarios.
+- **POST /users**: Crea un nuevo usuario.
+- **GET /users/{id}**: Muestra un usuario específico.
+- **PUT /users/{id}**: Actualiza un usuario existente.
+- **DELETE /users/{id}**: Elimina un usuario.
+
+#### Código:
+```php
+Route::get('/users', [UserController::class, 'index']);
+Route::post('/users', [UserController::class, 'store']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+Route::put('/users/{id}', [UserController::class, 'update']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
+```
+
+---
+
+### Rutas de Productos
+
+- **GET /shoes**: Lista todos los productos.
+- **POST /shoes**: Registra un nuevo producto.
+- **GET /shoes/{id}**: Obtiene un producto por su ID.
+- **PUT /shoes/{id}**: Actualiza un producto.
+- **DELETE /shoes/{id}**: Elimina un producto.
+
+#### Código:
+```php
+Route::get('/shoes', [ShoeController::class, 'index']);
+Route::post('/shoes', [ShoeController::class, 'store']);
+Route::get('/shoes/{id}', [ShoeController::class, 'show']);
+Route::put('/shoes/{id}', [ShoeController::class, 'update']);
+Route::delete('/shoes/{id}', [ShoeController::class, 'destroy']);
+```
 
 ---
 
 ## Conclusión
-Este sistema es altamente funcional y flexible, permitiendo gestionar tanto la autenticación como los datos de usuarios y productos. Algunos puntos clave incluyen:
 
-1. **Integración de API**: Gracias a `HttpClient`, la comunicación con el servidor es directa y eficiente.
-2. **Modularidad**: Los componentes están diseñados para ser reutilizables y escalables.
-3. **Interactividad**: La estructura del proyecto facilita probar y ajustar cada función de manera sencilla.
-
-Este sistema es una excelente base para construir aplicaciones web modernas. Su enfoque modular permite agregar nuevas características, como notificaciones en tiempo real, análisis de datos o exportación de reportes. Además, la implementación actual es adaptable para trabajar con diferentes APIs o servicios en la nube, haciéndolo ideal para proyectos empresariales o académicos.
+Este sistema ofrece un manejo eficiente y seguro de los datos, permitiendo la administración de usuarios y productos mediante operaciones CRUD. Con el uso de migraciones, modelos y rutas bien estructuradas, se garantiza la escalabilidad y mantenibilidad del proyecto.
